@@ -1,14 +1,33 @@
 import express from "express";
-
+import { connectDb } from "./config/database.js";
+import User from "./models/user.js";
 const app = express();
 
-// route, request handler
-app.get("/", (req, res) => res.send("Im listening!"));
+app.post("/signup", async (re, res) => {
+  const userDetail = {
+    firstName: "Supreeth",
+    lastName: "Nayak",
+    email: "example@gmail.com",
+    password: "password",
+    age: 23,
+    gender: "male",
+  };
 
-app.get("/test", (req, res) => res.send("Im test!"));
-
-app.get("/contact", (req, res) => res.send("Im contact!"));
-
-app.listen(4000, (req, res) => {
-  console.log("listening to the server");
+  try {
+    // because it returns a promise
+    await new User(userDetail).save();
+    res.send("User created");
+  } catch (error) {
+    res.status(400).send("Error while creating user", error);
+    console.log(error);
+  }
 });
+
+connectDb()
+  .then(() => {
+    console.log("success");
+    app.listen(4000, (req, res) => {
+      console.log("listening to the server");
+    });
+  })
+  .catch(() => console.log("error"));
