@@ -1,33 +1,48 @@
-import express from "express";
-import { connectDb } from "./config/database.js";
-import User from "./models/user.js";
+const express = require("express");
+const connectDB = require("./config/database");
 const app = express();
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const http = require("http");
 
-app.post("/signup", async (re, res) => {
-  const userDetail = {
-    firstName: "Supreeth",
-    lastName: "Nayak",
-    email: "example@gmail.com",
-    password: "password",
-    age: 23,
-    gender: "male",
-  };
+require("dotenv").config();
 
-  try {
-    // because it returns a promise
-    await new User(userDetail).save();
-    res.send("User created");
-  } catch (error) {
-    res.status(400).send("Error while creating user", error);
-    console.log(error);
-  }
-});
+require("./utils/cronjob");
 
-connectDb()
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
+
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
+const paymentRouter = require("./routes/payment");
+const initializeSocket = require("./utils/socket");
+const chatRouter = require("./routes/chat");
+
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
+app.use("/", paymentRouter);
+app.use("/", chatRouter);
+
+const server = http.createServer(app);
+initializeSocket(server);
+
+connectDB()
   .then(() => {
-    console.log("success");
-    app.listen(4000, (req, res) => {
-      console.log("listening to the server");
+    console.log("Database connection established...");
+    server.listen(process.env.PORT, () => {
+      console.log("Server is successfully listening on port 7777...");
     });
   })
-  .catch(() => console.log("error"));
+  .catch((err) => {
+    console.error("Database cannot be connected!!");
+  });
