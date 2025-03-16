@@ -9,7 +9,7 @@ require("dotenv").config();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:4324",
     credentials: true,
   })
 );
@@ -21,6 +21,7 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const chatRouter = require("./routes/chat");
+const initializeSocket = require("./utils/socket");
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
@@ -29,6 +30,7 @@ app.use("/", userRouter);
 app.use("/", chatRouter);
 
 const server = http.createServer(app);
+initializeSocket(server);
 
 connectDB()
   .then(() => {
